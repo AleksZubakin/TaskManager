@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
     QTableWidgetItem,
 )
 from task_scheduler import TaskScheduler  # Импортируем класс TaskScheduler
+from datetime import datetime
 
 
 class MainWindow(QWidget):
@@ -225,6 +226,7 @@ class MainWindow(QWidget):
 
     def save_task(self) -> None:
         """Сохраняет задачу и взаимодействует с базой данных."""
+
         task_name = self.task_name_input.text()
         description = self.description_input.text()
         priority = self.priority_combo.currentText()
@@ -232,18 +234,24 @@ class MainWindow(QWidget):
         deadline = self.deadline_input.text()
         comment = self.comment_input.text()
 
-        # Если редактируем задачу
-        if self.table.currentRow() >= 0:
-            record_id = int(self.table.item(self.table.currentRow(), 0).text())
-            self.scheduler.update_task(record_id,
-                                       task_name, description,
-                                       priority, status, deadline, comment)
-        else:  # Если создаем новую задачу
-            self.scheduler.add_task(task_name, description,
-                                    priority, status, deadline, comment)
+        date_object = datetime.strptime(deadline, "%Y-%m-%d").date()
+        if date_object >= datetime.now().date():
 
-        self.load_tasks()  # Обновляем таблицу задач
-        self.cancel_task()  # Деактивируем изменения
+            # Если редактируем задачу
+            if self.table.currentRow() >= 0:
+                record_id = int(self.table.item(
+                    self.table.currentRow(), 0).text())
+                self.scheduler.update_task(record_id,
+                                           task_name, description,
+                                           priority, status, deadline, comment)
+            else:  # Если создаем новую задачу
+                self.scheduler.add_task(task_name, description,
+                                        priority, status, deadline, comment)
+
+            self.load_tasks()  # Обновляем таблицу задач
+            self.cancel_task()  # Деактивируем изменения
+        else:
+            QMessageBox.warning(self, "Ошибка", "Не корректная дата дедлайна.")
 
     def load_tasks(self) -> None:
         """Загружает и отображает все задачи из базы данных в таблице."""

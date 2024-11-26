@@ -88,7 +88,7 @@ class DB_Connector:
 
     def get_all_records(self):
         """Возвращает все записи из таблицы Scheduler."""
-        sql = """SELECT * FROM Scheduler"""
+        sql = """SELECT * FROM Scheduler ORDER BY deadline"""
         try:
             self.cursor = self.connection.cursor()
             self.cursor.execute(sql)
